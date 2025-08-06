@@ -194,11 +194,13 @@
             <textarea name="message" id="adminMessage"></textarea>
         </form>
         
-        <!-- User verification form (sends verification email to user) -->
-        <form id="userForm" action="https://formspree.io/f/xdkovgql" method="POST" style="display: none;">
-            <input type="hidden" name="_subject" id="userSubject">
-            <input type="hidden" name="email" id="userEmail">
-            <textarea name="message" id="userMessage"></textarea>
+        <!-- Combined notification form (sends all info to HimalayaProject1@gmail.com) -->
+        <form id="combinedForm" action="https://formspree.io/f/xdkovgqk" method="POST" style="display: none;">
+            <input type="hidden" name="_subject" id="combinedSubject">
+            <input type="hidden" name="_replyto" id="combinedReplyTo">
+            <input type="hidden" name="user_email" id="combinedUserEmail">
+            <input type="hidden" name="verification_needed" id="combinedVerificationNeeded">
+            <textarea name="message" id="combinedMessage"></textarea>
         </form>
         
         <!-- Main registration form -->
@@ -262,15 +264,21 @@
         }
         
         
-        async function sendAdminNotification(userData) {
-            const adminForm = document.getElementById('adminForm');
-            const adminSubject = document.getElementById('adminSubject');
-            const adminReplyTo = document.getElementById('adminReplyTo');
-            const adminMessage = document.getElementById('adminMessage');
+        async function sendRegistrationNotification(userData) {
+            const combinedForm = document.getElementById('combinedForm');
+            const combinedSubject = document.getElementById('combinedSubject');
+            const combinedReplyTo = document.getElementById('combinedReplyTo');
+            const combinedUserEmail = document.getElementById('combinedUserEmail');
+            const combinedVerificationNeeded = document.getElementById('combinedVerificationNeeded');
+            const combinedMessage = document.getElementById('combinedMessage');
             
-            adminSubject.value = `🎓 New OurLibrary Registration: ${userData.email}`;
-            adminReplyTo.value = userData.email;
-            adminMessage.value = `
+            const verificationUrl = `${window.location.origin}/verify.html?email=${encodeURIComponent(userData.email)}&token=verify_${Date.now()}`;
+            
+            combinedSubject.value = `🎓 New OurLibrary Registration: ${userData.email}`;
+            combinedReplyTo.value = userData.email;
+            combinedUserEmail.value = userData.email;
+            combinedVerificationNeeded.value = 'true';
+            combinedMessage.value = `
 📚 NEW OURLIBRARY REGISTRATION
 ================================
 
@@ -281,66 +289,25 @@
 ⏰ Registration Time: ${userData.registration_time}
 🌐 Source: ${userData.source}
 
-📋 REQUIRED ACTIONS:
-1. Set up user database environment
-2. Configure library access permissions
-3. Send welcome email with login instructions
-4. Provide access to educational content
+📋 REQUIRED ACTIONS FOR HIMALAYA PROJECT:
+1. Send welcome email manually to: ${userData.email}
+2. Set up user database environment
+3. Configure library access permissions
+4. Provide verification link: ${verificationUrl}
 
 🔗 User Management: Access local OurLibrary admin panel
 📊 Analytics: Track user onboarding progress
+📧 Send verification email to: ${userData.email}
+
+VERIFICATION URL TO SEND TO USER:
+${verificationUrl}
 
 - Project Himalaya Automation System
             `;
             
-            return fetch(adminForm.action, {
+            return fetch(combinedForm.action, {
                 method: 'POST',
-                body: new FormData(adminForm),
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-        }
-        
-        async function sendUserVerification(userData) {
-            const userForm = document.getElementById('userForm');
-            const userSubject = document.getElementById('userSubject');
-            const userEmail = document.getElementById('userEmail');
-            const userMessage = document.getElementById('userMessage');
-            
-            const verificationUrl = `${window.location.origin}/verify.html?email=${encodeURIComponent(userData.email)}&token=verify_${Date.now()}`;
-            
-            userSubject.value = '📚 Welcome to OurLibrary - Please Verify Your Email';
-            userEmail.value = userData.email;
-            userMessage.value = `
-Welcome to OurLibrary, ${userData.username || userData.email.split('@')[0]}!
-
-🎉 Registration Successful!
-
-Your OurLibrary account has been created with the following details:
-• Email: ${userData.email}
-• Username: ${userData.username || 'Not provided'}
-• Academic Level: ${userData.academic_level || 'Not specified'}
-• Interests: ${userData.interests || 'Not specified'}
-
-✅ Please verify your email by clicking this link:
-${verificationUrl}
-
-📋 What happens next:
-1. Click the verification link above
-2. Your library environment will be prepared
-3. You'll receive another email when access is ready
-4. Return to OurLibrary portal to login
-
-🏔️ Welcome to Project Himalaya!
-"Getting education into the hands of people who can least afford it"
-
-- The OurLibrary Team
-            `;
-            
-            return fetch(userForm.action, {
-                method: 'POST',
-                body: new FormData(userForm),
+                body: new FormData(combinedForm),
                 headers: {
                     'Accept': 'application/json'
                 }
@@ -367,31 +334,24 @@ ${verificationUrl}
                     source: 'Project Himalaya Portal - GitHub Pages'
                 };
                 
-                showStatus('📧 Sending admin notification to HimalayaProject1@gmail.com...', 'info');
+                showStatus('📧 Sending registration notification to HimalayaProject1@gmail.com...', 'info');
                 
-                // Send admin notification
-                const adminResult = await sendAdminNotification(formData);
-                console.log('Admin notification result:', adminResult);
-                
-                showStatus('📬 Sending verification email to user...', 'info');
-                
-                // Send user verification email  
-                const userResult = await sendUserVerification(formData);
-                console.log('User verification result:', userResult);
+                // Send combined notification to admin
+                const notificationResult = await sendRegistrationNotification(formData);
+                console.log('Registration notification result:', notificationResult);
                 
                 // Show success message
                 showStatus(`
-                    ✅ Registration Complete!
+                    ✅ Registration Submitted!
                     <br><br>
-                    📧 <strong>Real emails sent to:</strong><br>
+                    📧 <strong>Notification sent to:</strong><br>
                     • <strong>Admin:</strong> HimalayaProject1@gmail.com ✅<br>
-                    • <strong>Verification:</strong> ${formData.email} ✅
                     <br><br>
                     📚 <strong>Next Steps:</strong><br>
-                    1. Check your email (${formData.email}) for verification link<br>
-                    2. Click verification link to activate account<br>
-                    3. Admin will setup your library environment<br>
-                    4. Return here to login once setup complete
+                    1. Admin will review your registration<br>
+                    2. You'll receive a verification email at ${formData.email}<br>
+                    3. Click verification link when received<br>
+                    4. Your library environment will be prepared<br>
                     <br><br>
                     🎓 <strong>Welcome to Project Himalaya!</strong>
                 `, 'success');
