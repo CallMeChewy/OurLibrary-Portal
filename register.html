@@ -305,26 +305,56 @@ ${verificationUrl}
             
             const submitBtn = document.getElementById('submitBtn');
             
-            // Show loading state
+            // GET CURRENT FORM DATA - NO CACHING
+            const currentFormData = {
+                email: document.getElementById('email').value.trim(),
+                username: document.getElementById('username').value.trim() || null,
+                password: document.getElementById('password').value,
+                academic_level: document.getElementById('academic-level').value || null,
+                interests: document.getElementById('interests').value.trim() || null,
+                registration_time: new Date().toISOString(),
+                source: 'Project Himalaya Portal - Live Test'
+            };
+            
+            console.log('CURRENT FORM DATA:', currentFormData);
+            
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Sending Emails...';
+            submitBtn.textContent = 'Sending Real Email...';
             
             try {
-                const formData = {
-                    email: document.getElementById('email').value.trim(),
-                    username: document.getElementById('username').value.trim() || null,
-                    password: document.getElementById('password').value,
-                    academic_level: document.getElementById('academic-level').value || null,
-                    interests: document.getElementById('interests').value.trim() || null,
-                    registration_time: new Date().toISOString(),
-                    source: 'Project Himalaya Portal - GitHub Pages'
-                };
+                showStatus('📧 Sending admin notification with current data...', 'info');
                 
-                showStatus('📧 Opening email client for HimalayaProject1@gmail.com...', 'info');
+                // Send via Formspree with CURRENT data
+                const formData = new FormData();
+                formData.append('_subject', `🎓 New OurLibrary Registration: ${currentFormData.email}`);
+                formData.append('_replyto', currentFormData.email);
+                formData.append('message', `📚 NEW OURLIBRARY REGISTRATION
+================================
+
+📧 Email: ${currentFormData.email}
+👤 Username: ${currentFormData.username || 'Not provided'}
+🎓 Academic Level: ${currentFormData.academic_level || 'Not specified'}
+📖 Interests: ${currentFormData.interests || 'Not specified'}
+⏰ Registration Time: ${currentFormData.registration_time}
+🌐 Source: ${currentFormData.source}
+
+📧 VERIFICATION URL TO SEND TO USER:
+https://callmechewy.github.io/OurLibrary-Portal/verify.html?email=${encodeURIComponent(currentFormData.email)}&token=verify_${Date.now()}
+
+📋 NEXT ACTIONS:
+1. Send verification email to user
+2. Set up database environment
+3. Configure library access
+
+- Project Himalaya Live Test System`);
                 
-                // Send registration notification via mailto
-                const notificationResult = await sendRegistrationNotification(formData);
-                console.log('Registration notification result:', notificationResult);
+                const response = await fetch('https://formspree.io/f/xdkovgqk', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    console.log('Registration sent with current data:', currentFormData);
                 
                 // Show success message
                 showStatus(`
