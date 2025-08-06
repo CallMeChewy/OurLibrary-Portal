@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join OurLibrary - Project Himalaya</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -114,12 +113,6 @@
             box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
         }
         
-        .submit-button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
         .status {
             margin-top: 20px;
             padding: 15px;
@@ -160,22 +153,6 @@
         .back-link a:hover {
             color: #fbbf24;
         }
-        
-        .loading-spinner {
-            display: none;
-            margin: 10px auto;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
@@ -188,6 +165,21 @@
             </div>
         </div>
         
+        <!-- Admin notification form (hidden, sends to HimalayaProject1@gmail.com) -->
+        <form id="adminForm" action="https://formspree.io/f/xdkovgqk" method="POST" style="display: none;">
+            <input type="hidden" name="_subject" id="adminSubject">
+            <input type="hidden" name="_replyto" id="adminReplyTo">
+            <textarea name="message" id="adminMessage"></textarea>
+        </form>
+        
+        <!-- User verification form (sends verification email to user) -->
+        <form id="userForm" action="https://formspree.io/f/xdkovgql" method="POST" style="display: none;">
+            <input type="hidden" name="_subject" id="userSubject">
+            <input type="hidden" name="email" id="userEmail">
+            <textarea name="message" id="userMessage"></textarea>
+        </form>
+        
+        <!-- Main registration form -->
         <form id="registrationForm" onsubmit="handleRegistration(event)">
             <div class="form-group">
                 <label class="form-label" for="email">Email Address</label>
@@ -230,8 +222,6 @@
             <button type="submit" class="submit-button" id="submitBtn">
                 🚀 Join OurLibrary
             </button>
-            
-            <div class="loading-spinner" id="loadingSpinner"></div>
         </form>
         
         <div id="status" class="status"></div>
@@ -249,27 +239,16 @@
             status.style.display = 'block';
         }
         
-        // Initialize EmailJS
-        (function() {
-            emailjs.init("demo_user_id"); // Will be replaced with real EmailJS user ID
-        })();
-        
         async function sendAdminNotification(userData) {
-            const adminEmailTemplate = {
-                service_id: 'gmail',
-                template_id: 'admin_notification',
-                user_id: 'demo_user_id',
-                template_params: {
-                    to_email: 'HimalayaProject1@gmail.com',
-                    subject: `🎓 New OurLibrary Registration: ${userData.email}`,
-                    user_email: userData.email,
-                    username: userData.username || 'Not provided',
-                    academic_level: userData.academic_level || 'Not specified',
-                    interests: userData.interests || 'Not specified',
-                    registration_time: userData.registration_time,
-                    source: userData.source,
-                    message: `
-NEW OURLIBRARY REGISTRATION
+            const adminForm = document.getElementById('adminForm');
+            const adminSubject = document.getElementById('adminSubject');
+            const adminReplyTo = document.getElementById('adminReplyTo');
+            const adminMessage = document.getElementById('adminMessage');
+            
+            adminSubject.value = `🎓 New OurLibrary Registration: ${userData.email}`;
+            adminReplyTo.value = userData.email;
+            adminMessage.value = `
+📚 NEW OURLIBRARY REGISTRATION
 ================================
 
 📧 Email: ${userData.email}
@@ -281,7 +260,7 @@ NEW OURLIBRARY REGISTRATION
 
 📋 REQUIRED ACTIONS:
 1. Set up user database environment
-2. Configure library access permissions  
+2. Configure library access permissions
 3. Send welcome email with login instructions
 4. Provide access to educational content
 
@@ -289,40 +268,70 @@ NEW OURLIBRARY REGISTRATION
 📊 Analytics: Track user onboarding progress
 
 - Project Himalaya Automation System
-                    `
-                }
-            };
+            `;
             
-            return emailjs.send('gmail', 'template_admin', adminEmailTemplate.template_params);
+            return fetch(adminForm.action, {
+                method: 'POST',
+                body: new FormData(adminForm),
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
         }
         
         async function sendUserVerification(userData) {
+            const userForm = document.getElementById('userForm');
+            const userSubject = document.getElementById('userSubject');
+            const userEmail = document.getElementById('userEmail');
+            const userMessage = document.getElementById('userMessage');
+            
             const verificationUrl = `${window.location.origin}/verify.html?email=${encodeURIComponent(userData.email)}&token=verify_${Date.now()}`;
             
-            const userEmailTemplate = {
-                to_email: userData.email,
-                subject: '📚 Welcome to OurLibrary - Please Verify Your Email',
-                username: userData.username || userData.email.split('@')[0],
-                email: userData.email,
-                academic_level: userData.academic_level || 'Not specified',
-                interests: userData.interests || 'Not specified',
-                verification_url: verificationUrl,
-                message: `Welcome to OurLibrary! Please verify your email to complete registration.`
-            };
+            userSubject.value = '📚 Welcome to OurLibrary - Please Verify Your Email';
+            userEmail.value = userData.email;
+            userMessage.value = `
+Welcome to OurLibrary, ${userData.username || userData.email.split('@')[0]}!
+
+🎉 Registration Successful!
+
+Your OurLibrary account has been created with the following details:
+• Email: ${userData.email}
+• Username: ${userData.username || 'Not provided'}
+• Academic Level: ${userData.academic_level || 'Not specified'}
+• Interests: ${userData.interests || 'Not specified'}
+
+✅ Please verify your email by clicking this link:
+${verificationUrl}
+
+📋 What happens next:
+1. Click the verification link above
+2. Your library environment will be prepared
+3. You'll receive another email when access is ready
+4. Return to OurLibrary portal to login
+
+🏔️ Welcome to Project Himalaya!
+"Getting education into the hands of people who can least afford it"
+
+- The OurLibrary Team
+            `;
             
-            return emailjs.send('gmail', 'template_user', userEmailTemplate);
+            return fetch(userForm.action, {
+                method: 'POST',
+                body: new FormData(userForm),
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
         }
         
         async function handleRegistration(event) {
             event.preventDefault();
             
             const submitBtn = document.getElementById('submitBtn');
-            const spinner = document.getElementById('loadingSpinner');
             
             // Show loading state
             submitBtn.disabled = true;
             submitBtn.textContent = 'Sending Emails...';
-            spinner.style.display = 'block';
             
             try {
                 const formData = {
@@ -335,72 +344,25 @@ NEW OURLIBRARY REGISTRATION
                     source: 'Project Himalaya Portal - GitHub Pages'
                 };
                 
-                showStatus('📧 Sending emails via OurLibrary backend...', 'info');
+                showStatus('📧 Sending admin notification to HimalayaProject1@gmail.com...', 'info');
                 
-                // Try to send real emails via local OurLibrary backend
-                try {
-                    const backendResponse = await fetch('http://127.0.0.1:8082/api/auth/register', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            email: formData.email,
-                            username: formData.username,
-                            password: formData.password,
-                            user_preferences: {
-                                academic_level: formData.academic_level,
-                                preferred_subjects: formData.interests ? formData.interests.split(',').map(s => s.trim()) : [],
-                                registration_source: formData.source
-                            },
-                            mission_acknowledgment: true,
-                            admin_notification_email: 'HimalayaProject1@gmail.com'
-                        })
-                    });
-                    
-                    if (backendResponse.ok) {
-                        console.log('✅ Real emails sent via OurLibrary backend');
-                        showStatus('📧 Real emails sent to HimalayaProject1@gmail.com and user!', 'info');
-                    } else {
-                        throw new Error('Backend not available');
-                    }
-                } catch (error) {
-                    console.log('⚠️ Backend not available, using backup email method');
-                    
-                    // Fallback: Use mailto links to trigger email client
-                    const adminMailto = `mailto:HimalayaProject1@gmail.com?subject=${encodeURIComponent('🎓 New OurLibrary Registration: ' + formData.email)}&body=${encodeURIComponent(`
-📚 NEW OURLIBRARY REGISTRATION
-================================
-
-📧 Email: ${formData.email}
-👤 Username: ${formData.username || 'Not provided'}
-🎓 Academic Level: ${formData.academic_level || 'Not specified'}
-📖 Interests: ${formData.interests || 'Not specified'}
-⏰ Registration Time: ${formData.registration_time}
-🌐 Source: ${formData.source}
-
-📋 REQUIRED ACTIONS:
-1. Set up user database environment
-2. Configure library access permissions
-3. Send welcome email with login instructions
-4. Provide access to educational content
-
-- Project Himalaya Automation System
-                    `)}`;
-                    
-                    // Open email client for admin notification
-                    window.open(adminMailto, '_blank');
-                    
-                    showStatus('📧 Email client opened for HimalayaProject1@gmail.com notification', 'info');
-                }
+                // Send admin notification
+                const adminResult = await sendAdminNotification(formData);
+                console.log('Admin notification result:', adminResult);
+                
+                showStatus('📬 Sending verification email to user...', 'info');
+                
+                // Send user verification email  
+                const userResult = await sendUserVerification(formData);
+                console.log('User verification result:', userResult);
                 
                 // Show success message
                 showStatus(`
                     ✅ Registration Complete!
                     <br><br>
-                    📧 <strong>Emails sent to:</strong><br>
-                    • <strong>Admin:</strong> HimalayaProject1@gmail.com<br>
-                    • <strong>Verification:</strong> ${formData.email}
+                    📧 <strong>Real emails sent to:</strong><br>
+                    • <strong>Admin:</strong> HimalayaProject1@gmail.com ✅<br>
+                    • <strong>Verification:</strong> ${formData.email} ✅
                     <br><br>
                     📚 <strong>Next Steps:</strong><br>
                     1. Check your email (${formData.email}) for verification link<br>
@@ -411,22 +373,23 @@ NEW OURLIBRARY REGISTRATION
                     🎓 <strong>Welcome to Project Himalaya!</strong>
                 `, 'success');
                 
-                // Store registration for tracking
+                // Store successful registration
                 localStorage.setItem('ourlibrary_registration', JSON.stringify({
                     user: formData,
                     status: 'emails_sent',
                     admin_notified: true,
                     user_verification_sent: true,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    admin_email: 'HimalayaProject1@gmail.com'
                 }));
                 
             } catch (error) {
-                showStatus(`❌ Registration failed: ${error.message}`, 'error');
+                console.error('Registration error:', error);
+                showStatus(`❌ Email sending failed: ${error.message}`, 'error');
             } finally {
                 // Reset form
                 submitBtn.disabled = false;
                 submitBtn.textContent = '🚀 Join OurLibrary';
-                spinner.style.display = 'none';
             }
         }
     </script>
