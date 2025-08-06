@@ -265,20 +265,10 @@
         
         
         async function sendRegistrationNotification(userData) {
-            const combinedForm = document.getElementById('combinedForm');
-            const combinedSubject = document.getElementById('combinedSubject');
-            const combinedReplyTo = document.getElementById('combinedReplyTo');
-            const combinedUserEmail = document.getElementById('combinedUserEmail');
-            const combinedVerificationNeeded = document.getElementById('combinedVerificationNeeded');
-            const combinedMessage = document.getElementById('combinedMessage');
-            
             const verificationUrl = `${window.location.origin}/verify.html?email=${encodeURIComponent(userData.email)}&token=verify_${Date.now()}`;
             
-            combinedSubject.value = `🎓 New OurLibrary Registration: ${userData.email}`;
-            combinedReplyTo.value = userData.email;
-            combinedUserEmail.value = userData.email;
-            combinedVerificationNeeded.value = 'true';
-            combinedMessage.value = `
+            // Create mailto link for guaranteed delivery to HimalayaProject1@gmail.com
+            const adminMailto = `mailto:HimalayaProject1@gmail.com?subject=${encodeURIComponent('🎓 New OurLibrary Registration: ' + userData.email)}&body=${encodeURIComponent(`
 📚 NEW OURLIBRARY REGISTRATION
 ================================
 
@@ -293,25 +283,21 @@
 1. Send welcome email manually to: ${userData.email}
 2. Set up user database environment
 3. Configure library access permissions
-4. Provide verification link: ${verificationUrl}
+
+📧 VERIFICATION EMAIL TO SEND TO USER:
+Please send this verification link to ${userData.email}:
+${verificationUrl}
 
 🔗 User Management: Access local OurLibrary admin panel
 📊 Analytics: Track user onboarding progress
-📧 Send verification email to: ${userData.email}
-
-VERIFICATION URL TO SEND TO USER:
-${verificationUrl}
 
 - Project Himalaya Automation System
-            `;
+            `)}`;
             
-            return fetch(combinedForm.action, {
-                method: 'POST',
-                body: new FormData(combinedForm),
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
+            // Open email client with pre-filled admin notification
+            window.open(adminMailto, '_blank');
+            
+            return { success: true, method: 'mailto' };
         }
         
         async function handleRegistration(event) {
@@ -334,9 +320,9 @@ ${verificationUrl}
                     source: 'Project Himalaya Portal - GitHub Pages'
                 };
                 
-                showStatus('📧 Sending registration notification to HimalayaProject1@gmail.com...', 'info');
+                showStatus('📧 Opening email client for HimalayaProject1@gmail.com...', 'info');
                 
-                // Send combined notification to admin
+                // Send registration notification via mailto
                 const notificationResult = await sendRegistrationNotification(formData);
                 console.log('Registration notification result:', notificationResult);
                 
@@ -344,12 +330,12 @@ ${verificationUrl}
                 showStatus(`
                     ✅ Registration Submitted!
                     <br><br>
-                    📧 <strong>Notification sent to:</strong><br>
+                    📧 <strong>Email client opened for:</strong><br>
                     • <strong>Admin:</strong> HimalayaProject1@gmail.com ✅<br>
                     <br><br>
                     📚 <strong>Next Steps:</strong><br>
-                    1. Admin will review your registration<br>
-                    2. You'll receive a verification email at ${formData.email}<br>
+                    1. Complete the email to HimalayaProject1@gmail.com<br>
+                    2. Admin will send verification email to ${formData.email}<br>
                     3. Click verification link when received<br>
                     4. Your library environment will be prepared<br>
                     <br><br>
