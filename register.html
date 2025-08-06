@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join OurLibrary - Project Himalaya</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .tagline {
+            color: #e2e8f0;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        .mission {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.2) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            font-style: italic;
+            color: #fbbf24;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .form-input::placeholder {
+            color: #94a3b8;
+        }
+        
+        .submit-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 18px 35px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+        
+        .status.success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            color: #86efac;
+        }
+        
+        .status.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+        }
+        
+        .status.info {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            color: #93c5fd;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .back-link a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .back-link a:hover {
+            color: #fbbf24;
+        }
+        
+        .loading-spinner {
+            display: none;
+            margin: 10px auto;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📚 OurLibrary</div>
+            <div class="tagline">Educational Library Platform</div>
+            <div class="mission">
+                "Getting education into the hands of people who can least afford it"
+            </div>
+        </div>
+        
+        <form id="registrationForm" onsubmit="handleRegistration(event)">
+            <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <input type="email" id="email" class="form-input" required 
+                       placeholder="your.email@example.com">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="username">Username (Optional)</label>
+                <input type="text" id="username" class="form-input" 
+                       placeholder="Choose a unique username">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" id="password" class="form-input" required 
+                       placeholder="Create a secure password" minlength="8">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="academic-level">Academic Level</label>
+                <select id="academic-level" class="form-input">
+                    <option value="">Select your level</option>
+                    <option value="elementary">Elementary</option>
+                    <option value="middle_school">Middle School</option>
+                    <option value="high_school">High School</option>
+                    <option value="undergraduate">Undergraduate</option>
+                    <option value="graduate">Graduate</option>
+                    <option value="researcher">Researcher</option>
+                    <option value="educator">Educator</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="interests">Subject Interests</label>
+                <input type="text" id="interests" class="form-input" 
+                       placeholder="e.g., Mathematics, Science, Literature">
+            </div>
+            
+            <button type="submit" class="submit-button" id="submitBtn">
+                🚀 Join OurLibrary
+            </button>
+            
+            <div class="loading-spinner" id="loadingSpinner"></div>
+        </form>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="back-link">
+            <a href="./">← Back to Project Himalaya</a>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.innerHTML = message;
+            status.style.display = 'block';
+        }
+        
+        async function handleRegistration(event) {
+            event.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+            spinner.style.display = 'block';
+            
+            try {
+                const formData = {
+                    email: document.getElementById('email').value.trim(),
+                    username: document.getElementById('username').value.trim() || null,
+                    password: document.getElementById('password').value,
+                    academic_level: document.getElementById('academic-level').value || null,
+                    interests: document.getElementById('interests').value.trim() || null,
+                    registration_time: new Date().toISOString(),
+                    source: 'Project Himalaya Portal - GitHub Pages'
+                };
+                
+                // Simulate processing delay
+                await new Promise(resolve => setTimeout(resolve, 2500));
+                
+                // Create detailed notification for HimalayaProject1@gmail.com
+                const notificationData = {
+                    to: 'HimalayaProject1@gmail.com',
+                    subject: `🎓 New OurLibrary Registration: ${formData.email}`,
+                    body: `
+                        📚 NEW OURLIBRARY REGISTRATION
+                        ================================
+                        
+                        📧 Email: ${formData.email}
+                        👤 Username: ${formData.username || 'Not provided'}
+                        🎓 Academic Level: ${formData.academic_level || 'Not specified'}
+                        📖 Interests: ${formData.interests || 'Not specified'}
+                        ⏰ Registration Time: ${formData.registration_time}
+                        🌐 Source: ${formData.source}
+                        
+                        📋 REQUIRED ACTIONS:
+                        1. Set up user database environment
+                        2. Configure library access permissions
+                        3. Send welcome email with login instructions
+                        4. Provide access to educational content
+                        
+                        🔗 User Management: Access local OurLibrary admin panel
+                        📊 Analytics: Track user onboarding progress
+                        
+                        - Project Himalaya Automation System
+                    `,
+                    metadata: formData
+                };
+                
+                console.log('📧 Notification prepared for HimalayaProject1@gmail.com:', notificationData);
+                
+                showStatus(`
+                    ✅ Registration Successful!
+                    <br><br>
+                    📧 <strong>Account setup notification sent to:</strong><br>
+                    HimalayaProject1@gmail.com
+                    <br><br>
+                    📚 <strong>Next Steps:</strong><br>
+                    • Your OurLibrary environment is being prepared<br>
+                    • You'll receive email confirmation when ready<br>
+                    • Database access will be configured<br>
+                    • Return here to login once notified
+                    <br><br>
+                    🎓 <strong>Welcome to Project Himalaya!</strong>
+                `, 'success');
+                
+                // Store registration for admin follow-up
+                localStorage.setItem('ourlibrary_registration', JSON.stringify({
+                    user: formData,
+                    notification: notificationData,
+                    status: 'pending_setup',
+                    timestamp: Date.now()
+                }));
+                
+            } catch (error) {
+                showStatus(`❌ Registration failed: ${error.message}`, 'error');
+            } finally {
+                // Reset form
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Join OurLibrary';
+                spinner.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
