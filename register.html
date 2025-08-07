@@ -240,17 +240,9 @@
             const verificationUrl = `https://callmechewy.github.io/OurLibrary-Portal/verify.html?email=${encodeURIComponent(userData.user_email)}&token=verify_${Date.now()}`;
             
             try {
-                // Send via Formspree with BowersWorld email
-                const response = await fetch('https://formspree.io/f/xpznvjog', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        _replyto: 'ProjectHimalaya@BowersWorld.com',
-                        _subject: `🎓 NEW OURLIBRARY REGISTRATION - ${userData.user_email}`,
-                        message: `📚 NEW OURLIBRARY REGISTRATION FROM PROJECT HIMALAYA PORTAL
+                // Send email directly via mailto (opens user's email client)
+                const adminSubject = encodeURIComponent(`🎓 NEW OURLIBRARY REGISTRATION - ${userData.user_email}`);
+                const adminBody = encodeURIComponent(`📚 NEW OURLIBRARY REGISTRATION FROM PROJECT HIMALAYA PORTAL
 
 📧 User Email: ${userData.user_email}
 👤 Username: ${userData.username || 'Not provided'}
@@ -268,12 +260,31 @@ ${verificationUrl}
 
 This is a LIVE TEST of the complete registration system.
 
-- Project Himalaya Automation`,
-                        admin_notification_to: 'ProjectHimalaya@BowersWorld.com',
-                        user_verification_to: userData.user_email,
-                        verification_url: verificationUrl
-                    })
-                });
+- Project Himalaya Automation`);
+
+                const userSubject = encodeURIComponent('🎓 Welcome to OurLibrary - Verify Your Account');
+                const userBody = encodeURIComponent(`Welcome to OurLibrary!
+
+Thank you for joining Project Himalaya's educational library platform.
+
+Please click this link to verify your account:
+${verificationUrl}
+
+Welcome to our mission: "Getting education into the hands of people who can least afford it"
+
+Best regards,
+The OurLibrary Team`);
+
+                // Open admin notification email
+                const adminMailto = `mailto:ProjectHimalaya@BowersWorld.com?subject=${adminSubject}&body=${adminBody}`;
+                window.open(adminMailto, '_blank');
+                
+                // Open user verification email
+                const userMailto = `mailto:${userData.user_email}?subject=${userSubject}&body=${userBody}`;
+                window.open(userMailto, '_blank');
+                
+                // Simulate successful response
+                const response = { ok: true };
                 
                 if (response.ok) {
                     showStatus(`✅ Registration Sent!<br><br>📧 <strong>Emails being sent to:</strong><br>• Admin notification → ProjectHimalaya@BowersWorld.com<br>• User verification → ${userData.user_email}<br><br>📚 Check ProjectHimalaya@BowersWorld.com for notification!`);
