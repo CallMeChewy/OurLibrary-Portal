@@ -159,22 +159,6 @@
         .back-link a:hover {
             color: #fbbf24;
         }
-        
-        .loading-spinner {
-            display: none;
-            margin: 10px auto;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
@@ -187,45 +171,28 @@
             </div>
         </div>
         
-        <!-- Admin notification form (hidden, sends to HimalayaProject1@gmail.com) -->
-        <form id="adminForm" action="https://formspree.io/f/xdkovgqk" method="POST" style="display: none;">
-            <input type="hidden" name="_subject" id="adminSubject">
-            <input type="hidden" name="_replyto" id="adminReplyTo">
-            <textarea name="message" id="adminMessage"></textarea>
-        </form>
-        
-        <!-- Combined notification form (sends all info to HimalayaProject1@gmail.com) -->
-        <form id="combinedForm" action="https://formspree.io/f/xdkovgqk" method="POST" style="display: none;">
-            <input type="hidden" name="_subject" id="combinedSubject">
-            <input type="hidden" name="_replyto" id="combinedReplyTo">
-            <input type="hidden" name="user_email" id="combinedUserEmail">
-            <input type="hidden" name="verification_needed" id="combinedVerificationNeeded">
-            <textarea name="message" id="combinedMessage"></textarea>
-        </form>
-        
-        <!-- Main registration form -->
-        <form id="registrationForm" onsubmit="handleRegistration(event)">
+        <form id="registrationForm" action="https://formspree.io/f/xdkovgqk" method="POST">
             <div class="form-group">
                 <label class="form-label" for="email">Email Address</label>
-                <input type="email" id="email" class="form-input" required 
+                <input type="email" id="email" name="email" class="form-input" required 
                        placeholder="your.email@example.com">
             </div>
             
             <div class="form-group">
                 <label class="form-label" for="username">Username (Optional)</label>
-                <input type="text" id="username" class="form-input" 
+                <input type="text" id="username" name="username" class="form-input" 
                        placeholder="Choose a unique username">
             </div>
             
             <div class="form-group">
                 <label class="form-label" for="password">Password</label>
-                <input type="password" id="password" class="form-input" required 
+                <input type="password" id="password" name="password" class="form-input" required 
                        placeholder="Create a secure password" minlength="8">
             </div>
             
             <div class="form-group">
-                <label class="form-label" for="academic-level">Academic Level</label>
-                <select id="academic-level" class="form-input">
+                <label class="form-label" for="academic_level">Academic Level</label>
+                <select id="academic_level" name="academic_level" class="form-input">
                     <option value="">Select your level</option>
                     <option value="elementary">Elementary</option>
                     <option value="middle_school">Middle School</option>
@@ -239,11 +206,15 @@
             
             <div class="form-group">
                 <label class="form-label" for="interests">Subject Interests</label>
-                <input type="text" id="interests" class="form-input" 
+                <input type="text" id="interests" name="interests" class="form-input" 
                        placeholder="e.g., Mathematics, Science, Literature">
             </div>
             
-            <button type="submit" class="submit-button" id="submitBtn">
+            <input type="hidden" name="_subject" value="🎓 New OurLibrary Registration">
+            <input type="hidden" name="_next" value="https://callmechewy.github.io/OurLibrary-Portal/verify.html">
+            <input type="hidden" name="_cc" value="HimalayaProject1@gmail.com">
+            
+            <button type="submit" class="submit-button">
                 🚀 Join OurLibrary
             </button>
         </form>
@@ -254,114 +225,5 @@
             <a href="./">← Back to Project Himalaya</a>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script>
-        // Initialize EmailJS
-        emailjs.init("vKoJYOUNyh8PG2n-P");
-        
-        function showStatus(message, type) {
-            const status = document.getElementById('status');
-            status.className = `status ${type}`;
-            status.innerHTML = message;
-            status.style.display = 'block';
-        }
-        
-        async function sendVerificationEmail(userData) {
-            const verificationUrl = `https://callmechewy.github.io/OurLibrary-Portal/verify.html?email=${encodeURIComponent(userData.email)}&token=verify_${Date.now()}`;
-            
-            const userEmailParams = {
-                to_email: userData.email,
-                to_name: userData.username || userData.email.split('@')[0],
-                verification_url: verificationUrl,
-                subject: "🎓 Welcome to OurLibrary - Verify Your Account"
-            };
-            
-            return await emailjs.send('service_pz4i9yi', 'template_user_verification', userEmailParams);
-        }
-        
-        async function sendAdminNotification(userData) {
-            const adminEmailParams = {
-                to_email: 'HimalayaProject1@gmail.com',
-                user_email: userData.email,
-                username: userData.username || 'Not provided',
-                academic_level: userData.academic_level || 'Not specified',
-                interests: userData.interests || 'Not specified',
-                registration_time: userData.registration_time,
-                source: userData.source,
-                verification_url: `https://callmechewy.github.io/OurLibrary-Portal/verify.html?email=${encodeURIComponent(userData.email)}&token=verify_${Date.now()}`,
-                subject: `🎓 New OurLibrary Registration: ${userData.email}`
-            };
-            
-            return await emailjs.send('service_pz4i9yi', 'template_admin_notification', adminEmailParams);
-        }
-        
-        async function handleRegistration(event) {
-            event.preventDefault();
-            
-            const submitBtn = document.getElementById('submitBtn');
-            
-            // Get fresh form data every time - no caching
-            const formData = {
-                email: document.getElementById('email').value.trim(),
-                username: document.getElementById('username').value.trim() || null,
-                password: document.getElementById('password').value,
-                academic_level: document.getElementById('academic-level').value || null,
-                interests: document.getElementById('interests').value.trim() || null,
-                registration_time: new Date().toISOString(),
-                source: 'Project Himalaya Portal - GitHub Pages'
-            };
-            
-            console.log('CURRENT FORM DATA CAPTURED:', formData);
-            
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Sending Real Emails...';
-            
-            try {
-                showStatus('📧 Sending real verification email to user...', 'info');
-                
-                // Send real verification email to user
-                await sendVerificationEmail(formData);
-                
-                showStatus('📧 Sending real admin notification to HimalayaProject1@gmail.com...', 'info');
-                
-                // Send real admin notification
-                await sendAdminNotification(formData);
-                
-                // Show success message
-                showStatus(`
-                    ✅ Registration Complete!
-                    <br><br>
-                    📧 <strong>Real emails sent:</strong><br>
-                    • <strong>Verification email</strong> → ${formData.email} ✅<br>
-                    • <strong>Admin notification</strong> → HimalayaProject1@gmail.com ✅<br>
-                    <br><br>
-                    📚 <strong>Next Steps:</strong><br>
-                    1. Check ${formData.email} for verification email<br>
-                    2. Click verification link in email<br>
-                    3. Admin will prepare your library environment<br>
-                    <br><br>
-                    🎓 <strong>Welcome to Project Himalaya!</strong>
-                `, 'success');
-                
-                // Store successful registration
-                localStorage.setItem('ourlibrary_registration', JSON.stringify({
-                    user: formData,
-                    status: 'emails_sent',
-                    admin_notified: true,
-                    user_verification_sent: true,
-                    timestamp: Date.now(),
-                    admin_email: 'HimalayaProject1@gmail.com'
-                }));
-                
-            } catch (error) {
-                console.error('Registration error:', error);
-                showStatus(`❌ Real email sending failed: ${error.message}`, 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = '🚀 Join OurLibrary';
-            }
-        }
-    </script>
 </body>
 </html>
