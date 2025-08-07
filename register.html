@@ -150,7 +150,7 @@
             </div>
         </div>
         
-        <form id="registrationForm" onsubmit="handleSubmit(event)">
+        <form onsubmit="sendEmails(event)">
             <div class="form-group">
                 <label class="form-label" for="user_email">Email Address</label>
                 <input type="email" id="user_email" class="form-input" required 
@@ -202,22 +202,25 @@
     </div>
 
     <script>
-        function handleSubmit(event) {
+        function sendEmails(event) {
             event.preventDefault();
             
             const userData = {
-                user_email: document.getElementById('user_email').value,
-                username: document.getElementById('username').value,
+                user_email: document.getElementById('user_email').value.trim(),
+                username: document.getElementById('username').value.trim(),
                 password: document.getElementById('password').value,
                 academic_level: document.getElementById('academic_level').value,
-                interests: document.getElementById('interests').value,
+                interests: document.getElementById('interests').value.trim(),
                 timestamp: new Date().toISOString()
             };
             
-            // Create admin notification email
-            const adminEmail = `HerbBowers@gmail.com`;
-            const subject = `🎓 NEW OURLIBRARY REGISTRATION - ${userData.user_email}`;
-            const body = `📚 NEW OURLIBRARY REGISTRATION FROM PROJECT HIMALAYA PORTAL
+            console.log('Current form data:', userData);
+            
+            const verificationUrl = `https://callmechewy.github.io/OurLibrary-Portal/verify.html?email=${encodeURIComponent(userData.user_email)}&token=verify_${Date.now()}`;
+            
+            // Admin notification email to HerbBowers@gmail.com
+            const adminSubject = `🎓 NEW OURLIBRARY REGISTRATION - ${userData.user_email}`;
+            const adminBody = `📚 NEW OURLIBRARY REGISTRATION FROM PROJECT HIMALAYA PORTAL
 
 📧 User Email: ${userData.user_email}
 👤 Username: ${userData.username || 'Not provided'}
@@ -231,35 +234,40 @@
 3. Configure library access permissions
 
 🔗 Verification URL to send to user:
-https://callmechewy.github.io/OurLibrary-Portal/verify.html?email=${encodeURIComponent(userData.user_email)}&token=verify_${Date.now()}
+${verificationUrl}
 
 This is a LIVE TEST of the complete registration system.
 
 - Project Himalaya Automation`;
 
-            // Send both admin notification and user verification via mailto (guaranteed to work)
-            const userVerificationEmail = `${userData.user_email}`;
+            // User verification email
             const userSubject = `🎓 Welcome to OurLibrary - Verify Your Account`;
             const userBody = `Welcome to OurLibrary!
 
+Thank you for joining Project Himalaya's educational library platform.
+
 Please click this link to verify your account:
-https://callmechewy.github.io/OurLibrary-Portal/verify.html?email=${encodeURIComponent(userData.user_email)}&token=verify_${Date.now()}
+${verificationUrl}
 
-Welcome to Project Himalaya!
-- The OurLibrary Team`;
+Welcome to our mission: "Getting education into the hands of people who can least afford it"
 
-            // Open both email windows
-            window.open(`mailto:${adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
-            window.open(`mailto:${userVerificationEmail}?subject=${encodeURIComponent(userSubject)}&body=${encodeURIComponent(userBody)}`, '_blank');
+Best regards,
+The OurLibrary Team`;
+
+            // Open admin notification email
+            window.open(`mailto:HerbBowers@gmail.com?subject=${encodeURIComponent(adminSubject)}&body=${encodeURIComponent(adminBody)}`, '_blank');
+            
+            // Open user verification email  
+            window.open(`mailto:${userData.user_email}?subject=${encodeURIComponent(userSubject)}&body=${encodeURIComponent(userBody)}`, '_blank');
             
             // Show success status
             const status = document.getElementById('status');
             status.style.display = 'block';
             status.innerHTML = `
-                ✅ Registration Submitted!
+                ✅ Registration Complete!
                 <br><br>
                 📧 <strong>Email windows opened:</strong><br>
-                • Admin notification → ${adminEmail}<br>
+                • Admin notification → HerbBowers@gmail.com<br>
                 • User verification → ${userData.user_email}<br>
                 <br>
                 📚 <strong>Please send both emails to complete the test</strong>
