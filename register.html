@@ -248,7 +248,7 @@
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
-                        _replyto: 'herb@bowersworld.com',
+                        _replyto: 'ProjectHimalaya@BowersWorld.com',
                         _subject: `🎓 NEW OURLIBRARY REGISTRATION - ${userData.user_email}`,
                         message: `📚 NEW OURLIBRARY REGISTRATION FROM PROJECT HIMALAYA PORTAL
 
@@ -269,14 +269,14 @@ ${verificationUrl}
 This is a LIVE TEST of the complete registration system.
 
 - Project Himalaya Automation`,
-                        admin_notification_to: 'HerbBowers@gmail.com',
+                        admin_notification_to: 'ProjectHimalaya@BowersWorld.com',
                         user_verification_to: userData.user_email,
                         verification_url: verificationUrl
                     })
                 });
                 
                 if (response.ok) {
-                    showStatus(`✅ Registration Sent!<br><br>📧 <strong>Emails being sent to:</strong><br>• Admin notification → HerbBowers@gmail.com<br>• User verification → ${userData.user_email}<br><br>📚 Check HerbBowers@gmail.com for notification!`);
+                    showStatus(`✅ Registration Sent!<br><br>📧 <strong>Emails being sent to:</strong><br>• Admin notification → ProjectHimalaya@BowersWorld.com<br>• User verification → ${userData.user_email}<br><br>📚 Check ProjectHimalaya@BowersWorld.com for notification!`);
                 } else {
                     throw new Error('Registration failed');
                 }
