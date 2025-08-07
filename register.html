@@ -162,7 +162,7 @@
             </div>
         </div>
         
-        <form onsubmit="handleSubmission(event)">
+        <form onsubmit="sendRegistration(event)">
             <div class="form-group">
                 <label class="form-label" for="user_email">Email Address</label>
                 <input type="email" id="user_email" class="form-input" required 
@@ -213,13 +213,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
     <script>
-        // Initialize EmailJS with public key
-        (function(){
-            emailjs.init("Bx_s6XvXZnD1RPh1K");
-        })();
-
         function showStatus(message, type = 'success') {
             const status = document.getElementById('status');
             status.className = `status ${type}`;
@@ -227,12 +221,12 @@
             status.style.display = 'block';
         }
 
-        async function handleSubmission(event) {
+        async function sendRegistration(event) {
             event.preventDefault();
             
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Sending Real Emails...';
+            submitBtn.textContent = 'Sending...';
             
             const userData = {
                 user_email: document.getElementById('user_email').value.trim(),
@@ -246,57 +240,27 @@
             const verificationUrl = `https://callmechewy.github.io/OurLibrary-Portal/verify.html?email=${encodeURIComponent(userData.user_email)}&token=verify_${Date.now()}`;
             
             try {
-                showStatus('📧 Sending admin notification to HerbBowers@gmail.com...');
-                
-                // Send admin notification
-                const adminResult = await emailjs.send('service_gmail_direct', 'template_admin_notify', {
-                    to_email: 'HerbBowers@gmail.com',
-                    subject: `🎓 NEW OURLIBRARY REGISTRATION - ${userData.user_email}`,
-                    message: `📚 NEW OURLIBRARY REGISTRATION FROM PROJECT HIMALAYA PORTAL
-
-📧 User Email: ${userData.user_email}
-👤 Username: ${userData.username || 'Not provided'}
-🎓 Academic Level: ${userData.academic_level || 'Not specified'}
-📖 Interests: ${userData.interests || 'Not specified'}
-⏰ Registration Time: ${userData.timestamp}
-
-📋 REQUIRED ACTIONS:
-1. Send verification email to: ${userData.user_email}
-2. Prepare user database environment
-3. Configure library access permissions
-
-🔗 Verification URL to send to user:
-${verificationUrl}
-
-This is a LIVE TEST of the complete registration system.
-
-- Project Himalaya Automation`
+                // Send to real email server
+                const response = await fetch('http://localhost:3000/send-registration', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_data: userData,
+                        verification_url: verificationUrl
+                    })
                 });
                 
-                showStatus('📧 Sending verification email to user...');
-                
-                // Send user verification
-                const userResult = await emailjs.send('service_gmail_direct', 'template_user_verify', {
-                    to_email: userData.user_email,
-                    subject: '🎓 Welcome to OurLibrary - Verify Your Account',
-                    message: `Welcome to OurLibrary!
-
-Thank you for joining Project Himalaya's educational library platform.
-
-Please click this link to verify your account:
-${verificationUrl}
-
-Welcome to our mission: "Getting education into the hands of people who can least afford it"
-
-Best regards,
-The OurLibrary Team`
-                });
-                
-                showStatus(`✅ Registration Complete!<br><br>📧 <strong>Real emails sent:</strong><br>• Admin notification → HerbBowers@gmail.com ✅<br>• User verification → ${userData.user_email} ✅<br><br>📚 Check both email addresses for delivery!`);
+                if (response.ok) {
+                    showStatus(`✅ Registration Sent!<br><br>📧 <strong>Emails being sent to:</strong><br>• Admin notification → HerbBowers@gmail.com<br>• User verification → ${userData.user_email}<br><br>📚 Check HerbBowers@gmail.com for notification!`);
+                } else {
+                    throw new Error('Email server failed');
+                }
                 
             } catch (error) {
-                console.error('Email error:', error);
-                showStatus(`❌ Email sending failed: ${error.text || error.message}`, 'error');
+                console.error('Registration error:', error);
+                showStatus(`❌ Registration failed: ${error.message}`, 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = '🚀 Join OurLibrary - LIVE TEST';
