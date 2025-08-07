@@ -240,14 +240,37 @@
             const verificationUrl = `https://callmechewy.github.io/OurLibrary-Portal/verify.html?email=${encodeURIComponent(userData.user_email)}&token=verify_${Date.now()}`;
             
             try {
-                // Send to real email server
-                const response = await fetch('http://localhost:3000/send-registration', {
+                // Send via Formspree with BowersWorld email
+                const response = await fetch('https://formspree.io/f/xpznvjog', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
-                        user_data: userData,
+                        _replyto: 'herb@bowersworld.com',
+                        _subject: `🎓 NEW OURLIBRARY REGISTRATION - ${userData.user_email}`,
+                        message: `📚 NEW OURLIBRARY REGISTRATION FROM PROJECT HIMALAYA PORTAL
+
+📧 User Email: ${userData.user_email}
+👤 Username: ${userData.username || 'Not provided'}
+🎓 Academic Level: ${userData.academic_level || 'Not specified'}
+📖 Interests: ${userData.interests || 'Not specified'}
+⏰ Registration Time: ${userData.timestamp}
+
+📋 REQUIRED ACTIONS:
+1. Send verification email to: ${userData.user_email}
+2. Prepare user database environment
+3. Configure library access permissions
+
+🔗 Verification URL to send to user:
+${verificationUrl}
+
+This is a LIVE TEST of the complete registration system.
+
+- Project Himalaya Automation`,
+                        admin_notification_to: 'HerbBowers@gmail.com',
+                        user_verification_to: userData.user_email,
                         verification_url: verificationUrl
                     })
                 });
@@ -255,7 +278,7 @@
                 if (response.ok) {
                     showStatus(`✅ Registration Sent!<br><br>📧 <strong>Emails being sent to:</strong><br>• Admin notification → HerbBowers@gmail.com<br>• User verification → ${userData.user_email}<br><br>📚 Check HerbBowers@gmail.com for notification!`);
                 } else {
-                    throw new Error('Email server failed');
+                    throw new Error('Registration failed');
                 }
                 
             } catch (error) {
