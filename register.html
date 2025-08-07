@@ -171,29 +171,28 @@
             </div>
         </div>
         
-        <!-- User Registration Form - sends to HimalayaProject1@gmail.com -->
-        <form action="https://formspree.io/f/xdkovgqk" method="POST">
+        <form id="registrationForm" onsubmit="handleRegistration(event)">
             <div class="form-group">
                 <label class="form-label" for="email">Email Address</label>
-                <input type="email" name="user_email" class="form-input" required 
+                <input type="email" id="email" class="form-input" required 
                        placeholder="your.email@example.com">
             </div>
             
             <div class="form-group">
                 <label class="form-label" for="username">Username (Optional)</label>
-                <input type="text" name="username" class="form-input" 
+                <input type="text" id="username" class="form-input" 
                        placeholder="Choose a unique username">
             </div>
             
             <div class="form-group">
                 <label class="form-label" for="password">Password</label>
-                <input type="password" name="password" class="form-input" required 
+                <input type="password" id="password" class="form-input" required 
                        placeholder="Create a secure password" minlength="8">
             </div>
             
             <div class="form-group">
                 <label class="form-label" for="academic_level">Academic Level</label>
-                <select name="academic_level" class="form-input">
+                <select id="academic_level" class="form-input">
                     <option value="">Select your level</option>
                     <option value="elementary">Elementary</option>
                     <option value="middle_school">Middle School</option>
@@ -207,24 +206,87 @@
             
             <div class="form-group">
                 <label class="form-label" for="interests">Subject Interests</label>
-                <input type="text" name="interests" class="form-input" 
+                <input type="text" id="interests" class="form-input" 
                        placeholder="e.g., Mathematics, Science, Literature">
             </div>
             
-            <input type="hidden" name="_subject" value="🎓 NEW OURLIBRARY REGISTRATION - REAL EMAIL TEST">
-            <input type="hidden" name="_next" value="https://callmechewy.github.io/OurLibrary-Portal/verify.html">
-            <input type="hidden" name="_autoresponse" value="Thank you for registering! Check your email for verification link.">
-            <input type="hidden" name="registration_source" value="Project Himalaya Portal - Live Test">
-            <input type="hidden" name="admin_action_required" value="Send verification email to user and prepare library environment">
-            
-            <button type="submit" class="submit-button">
+            <button type="submit" class="submit-button" id="submitBtn">
                 🚀 Join OurLibrary
             </button>
         </form>
+        
+        <div id="status" class="status"></div>
         
         <div class="back-link">
             <a href="./">← Back to Project Himalaya</a>
         </div>
     </div>
+
+    <script>
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.innerHTML = message;
+            status.style.display = 'block';
+        }
+
+        async function handleRegistration(event) {
+            event.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const formData = {
+                user_email: document.getElementById('email').value.trim(),
+                username: document.getElementById('username').value.trim() || null,
+                password: document.getElementById('password').value,
+                academic_level: document.getElementById('academic_level').value || null,
+                interests: document.getElementById('interests').value.trim() || null,
+                registration_time: new Date().toISOString(),
+                source: 'Project Himalaya Portal - Live Test'
+            };
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending Real Emails...';
+            
+            try {
+                showStatus('📧 Sending verification email to user and admin notification...', 'info');
+                
+                const response = await fetch('/.netlify/functions/send-registration', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus(`
+                        ✅ Registration Complete!
+                        <br><br>
+                        📧 <strong>Real emails sent:</strong><br>
+                        • Verification email → ${formData.user_email} ✅<br>
+                        • Admin notification → HimalayaProject1@gmail.com ✅<br>
+                        <br><br>
+                        📚 <strong>Next Steps:</strong><br>
+                        1. Check ${formData.user_email} for verification email<br>
+                        2. Click verification link in email<br>
+                        3. Admin will prepare your library environment<br>
+                        <br><br>
+                        🎓 <strong>Welcome to Project Himalaya!</strong>
+                    `, 'success');
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+                
+            } catch (error) {
+                console.error('Registration error:', error);
+                showStatus(`❌ Email sending failed: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Join OurLibrary';
+            }
+        }
+    </script>
 </body>
 </html>
