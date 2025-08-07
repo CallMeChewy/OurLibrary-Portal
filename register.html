@@ -113,6 +113,12 @@
             box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
         }
         
+        .submit-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
         .back-link {
             text-align: center;
             margin-top: 30px;
@@ -138,6 +144,12 @@
             color: #86efac;
             display: none;
         }
+        
+        .status.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+        }
     </style>
 </head>
 <body>
@@ -150,7 +162,7 @@
             </div>
         </div>
         
-        <form onsubmit="sendEmails(event)">
+        <form onsubmit="handleSubmission(event)">
             <div class="form-group">
                 <label class="form-label" for="user_email">Email Address</label>
                 <input type="email" id="user_email" class="form-input" required 
@@ -189,7 +201,7 @@
                        placeholder="e.g., Mathematics, Science, Literature">
             </div>
             
-            <button type="submit" class="submit-button">
+            <button type="submit" class="submit-button" id="submitBtn">
                 🚀 Join OurLibrary - LIVE TEST
             </button>
         </form>
@@ -201,9 +213,26 @@
         </div>
     </div>
 
+    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
     <script>
-        function sendEmails(event) {
+        // Initialize EmailJS with public key
+        (function(){
+            emailjs.init("Bx_s6XvXZnD1RPh1K");
+        })();
+
+        function showStatus(message, type = 'success') {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.innerHTML = message;
+            status.style.display = 'block';
+        }
+
+        async function handleSubmission(event) {
             event.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending Real Emails...';
             
             const userData = {
                 user_email: document.getElementById('user_email').value.trim(),
@@ -214,13 +243,16 @@
                 timestamp: new Date().toISOString()
             };
             
-            console.log('Current form data:', userData);
-            
             const verificationUrl = `https://callmechewy.github.io/OurLibrary-Portal/verify.html?email=${encodeURIComponent(userData.user_email)}&token=verify_${Date.now()}`;
             
-            // Admin notification email to HerbBowers@gmail.com
-            const adminSubject = `🎓 NEW OURLIBRARY REGISTRATION - ${userData.user_email}`;
-            const adminBody = `📚 NEW OURLIBRARY REGISTRATION FROM PROJECT HIMALAYA PORTAL
+            try {
+                showStatus('📧 Sending admin notification to HerbBowers@gmail.com...');
+                
+                // Send admin notification
+                const adminResult = await emailjs.send('service_gmail_direct', 'template_admin_notify', {
+                    to_email: 'HerbBowers@gmail.com',
+                    subject: `🎓 NEW OURLIBRARY REGISTRATION - ${userData.user_email}`,
+                    message: `📚 NEW OURLIBRARY REGISTRATION FROM PROJECT HIMALAYA PORTAL
 
 📧 User Email: ${userData.user_email}
 👤 Username: ${userData.username || 'Not provided'}
@@ -238,11 +270,16 @@ ${verificationUrl}
 
 This is a LIVE TEST of the complete registration system.
 
-- Project Himalaya Automation`;
-
-            // User verification email
-            const userSubject = `🎓 Welcome to OurLibrary - Verify Your Account`;
-            const userBody = `Welcome to OurLibrary!
+- Project Himalaya Automation`
+                });
+                
+                showStatus('📧 Sending verification email to user...');
+                
+                // Send user verification
+                const userResult = await emailjs.send('service_gmail_direct', 'template_user_verify', {
+                    to_email: userData.user_email,
+                    subject: '🎓 Welcome to OurLibrary - Verify Your Account',
+                    message: `Welcome to OurLibrary!
 
 Thank you for joining Project Himalaya's educational library platform.
 
@@ -252,26 +289,18 @@ ${verificationUrl}
 Welcome to our mission: "Getting education into the hands of people who can least afford it"
 
 Best regards,
-The OurLibrary Team`;
-
-            // Open admin notification email
-            window.open(`mailto:HerbBowers@gmail.com?subject=${encodeURIComponent(adminSubject)}&body=${encodeURIComponent(adminBody)}`, '_blank');
-            
-            // Open user verification email  
-            window.open(`mailto:${userData.user_email}?subject=${encodeURIComponent(userSubject)}&body=${encodeURIComponent(userBody)}`, '_blank');
-            
-            // Show success status
-            const status = document.getElementById('status');
-            status.style.display = 'block';
-            status.innerHTML = `
-                ✅ Registration Complete!
-                <br><br>
-                📧 <strong>Email windows opened:</strong><br>
-                • Admin notification → HerbBowers@gmail.com<br>
-                • User verification → ${userData.user_email}<br>
-                <br>
-                📚 <strong>Please send both emails to complete the test</strong>
-            `;
+The OurLibrary Team`
+                });
+                
+                showStatus(`✅ Registration Complete!<br><br>📧 <strong>Real emails sent:</strong><br>• Admin notification → HerbBowers@gmail.com ✅<br>• User verification → ${userData.user_email} ✅<br><br>📚 Check both email addresses for delivery!`);
+                
+            } catch (error) {
+                console.error('Email error:', error);
+                showStatus(`❌ Email sending failed: ${error.text || error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Join OurLibrary - LIVE TEST';
+            }
         }
     </script>
 </body>
